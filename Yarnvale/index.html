@@ -1,0 +1,1626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Yarnvale</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    /* =========================
+       RESET & BASE
+    ========================== */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #071018;
+      --bg-soft: #101b27;
+      --bg-softer: #152233;
+      --accent: #f4b3ff;
+      --accent-2: #9ee1ff;
+      --accent-3: #ffe29f;
+      --text: #f7fbff;
+      --muted: #9aa9c0;
+      --danger: #ff9f9f;
+      --success: #c6ffb3;
+
+      --card-radius: 16px;
+      --shadow-soft: 0 12px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #16263b 0, #050810 60%, #020308 100%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #app {
+      width: 100%;
+      max-width: 480px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.7));
+      box-shadow: var(--shadow-soft);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* =========================
+       HEADER / RESOURCE BAR
+    ========================== */
+    header {
+      padding: 12px 14px 8px;
+      background: linear-gradient(135deg, rgba(244,179,255,0.25), rgba(158,225,255,0.12));
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      backdrop-filter: blur(12px);
+      position: relative;
+      z-index: 2;
+    }
+
+    .title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .game-title {
+      font-size: 18px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .subtitle {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .resource-bar {
+      display: flex;
+      gap: 8px;
+      justify-content: space-between;
+    }
+
+    .resource-pill {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 8px;
+      border-radius: 999px;
+      background: rgba(5,10,20,0.75);
+      border: 1px solid rgba(255,255,255,0.06);
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    .resource-pill span.icon {
+      font-size: 14px;
+      margin-right: 4px;
+    }
+
+    .resource-pill span.value {
+      font-weight: 600;
+    }
+
+    /* =========================
+       MAIN / SCREENS
+    ========================== */
+    main {
+      flex: 1;
+      padding: 10px 10px 64px;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    .screen {
+      display: none;
+      animation: fadeIn 0.25s ease-out;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    .screen-title {
+      font-size: 16px;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    .screen-subtitle {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .card {
+      background: radial-gradient(circle at top left, rgba(244,179,255,0.15), rgba(0,0,0,0.7));
+      border-radius: var(--card-radius);
+      padding: 10px 12px;
+      margin-bottom: 10px;
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.35);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .card-sub {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .card-body {
+      font-size: 12px;
+      color: var(--text);
+      line-height: 1.3;
+    }
+
+    .card-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 6px;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    /* =========================
+       BUTTONS
+    ========================== */
+    .btn {
+      border: none;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      cursor: pointer;
+      background: linear-gradient(135deg, #9ee1ff, #f4b3ff);
+      color: #050815;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: transform 0.08s ease-out, box-shadow 0.08s ease-out;
+      white-space: nowrap;
+    }
+
+    .btn:active {
+      transform: translateY(1px) scale(0.97);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    }
+
+    .btn-secondary {
+      background: rgba(3,10,22,0.9);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.12);
+      box-shadow: none;
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #ff9f9f, #ff6b7d);
+      color: #2a0508;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border: 1px dashed rgba(255,255,255,0.35);
+      color: var(--muted);
+      box-shadow: none;
+    }
+
+    .btn-sm {
+      padding: 4px 8px;
+      font-size: 11px;
+    }
+
+    .btn-wide {
+      width: 100%;
+      justify-content: center;
+    }
+
+    /* =========================
+       BOTTOM NAV
+    ========================== */
+    nav {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 480px;
+      padding: 6px 6px 8px;
+      background: radial-gradient(circle at top, rgba(158,225,255,0.16), rgba(0,0,0,0.95));
+      border-top: 1px solid rgba(255,255,255,0.12);
+      backdrop-filter: blur(12px);
+      z-index: 3;
+    }
+
+    .nav-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 4px;
+    }
+
+    .nav-btn {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: var(--muted);
+      background: transparent;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      padding: 4px 0;
+      cursor: pointer;
+      transition: background 0.1s, border-color 0.1s, transform 0.08s;
+    }
+
+    .nav-btn span.icon {
+      font-size: 16px;
+      margin-bottom: 2px;
+    }
+
+    .nav-btn.active {
+      background: rgba(11,25,43,0.98);
+      border-color: rgba(158,225,255,0.6);
+      color: var(--text);
+      transform: translateY(-1px);
+    }
+
+    /* =========================
+       MODAL / OVERLAY
+    ========================== */
+    #modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.65);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+
+    #modal-overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      background: radial-gradient(circle at top left, rgba(244,179,255,0.18), rgba(5,9,18,0.96));
+      padding: 16px;
+      border-radius: 18px;
+      max-width: 340px;
+      width: 90%;
+      border: 1px solid rgba(255,255,255,0.18);
+      box-shadow: 0 18px 40px rgba(0,0,0,0.7);
+    }
+
+    .modal-title {
+      font-size: 15px;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    .modal-body {
+      font-size: 13px;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    /* =========================
+       SPECIAL ELEMENTS
+    ========================== */
+    .sheep-strip {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .sheep-card {
+      min-width: 150px;
+      background: radial-gradient(circle at top, rgba(158,225,255,0.22), rgba(5,9,18,0.96));
+      border-radius: 14px;
+      padding: 8px;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+
+    .sheep-name {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .sheep-meta {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.15);
+      margin-right: 4px;
+    }
+
+    .progress-container {
+      margin-top: 4px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.06);
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--accent-3), var(--accent), var(--accent-2));
+      width: 0%;
+      transition: width 0.1s linear;
+    }
+
+    .tagline {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .stack {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .stack-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .key-value {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      margin-top: 3px;
+    }
+
+    .kv-label {
+      color: var(--muted);
+    }
+
+    .kv-value {
+      font-weight: 600;
+    }
+
+    .chip {
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+
+    /* Intro screen nicer look */
+    #screen-intro .hero {
+      text-align: center;
+      padding: 20px 10px 12px;
+    }
+
+    #screen-intro .hero-title {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    #screen-intro .hero-art {
+      margin: 12px auto 14px;
+      width: 160px;
+      height: 120px;
+      border-radius: 20px;
+      background: radial-gradient(circle at top, #9ee1ff, #f4b3ff);
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+    }
+
+    /* Simple stylised "sheep hill" */
+    .hero-art::before {
+      content: "";
+      position: absolute;
+      inset: 40% -10% -10%;
+      background: radial-gradient(circle at top, #b6f3c8, #4c7b52);
+      border-radius: 50%;
+    }
+
+    .hero-art::after {
+      content: "🐑";
+      position: absolute;
+      font-size: 40px;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -35%);
+      text-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    }
+
+    .hero-text {
+      font-size: 13px;
+      color: var(--muted);
+      max-width: 320px;
+      margin: 0 auto 10px;
+      line-height: 1.35;
+    }
+
+    /* =========================
+       ANIMATIONS
+    ========================== */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Desktop centering */
+    @media (min-width: 600px) {
+      body {
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <header>
+      <div class="title-row">
+        <div>
+          <div class="game-title">Yarnvale</div>
+          <div class="subtitle">A gentle knitting & sheep-raising tale</div>
+        </div>
+        <button class="btn btn-sm btn-secondary" id="btn-settings">☼</button>
+      </div>
+      <div class="resource-bar">
+        <div class="resource-pill">
+          <span class="icon">🧶</span>
+          <span>Yarn</span>
+          <span class="value" id="res-yarn">0</span>
+        </div>
+        <div class="resource-pill">
+          <span class="icon">🦙</span>
+          <span>Wool</span>
+          <span class="value" id="res-wool">0</span>
+        </div>
+        <div class="resource-pill">
+          <span class="icon">✨</span>
+          <span>Gold</span>
+          <span class="value" id="res-gold">0</span>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <!-- INTRO SCREEN -->
+      <section class="screen active" id="screen-intro">
+        <div class="hero">
+          <div class="hero-title">Yarnvale</div>
+          <div class="hero-art"></div>
+          <p class="hero-text">
+            You’ve inherited a tiny cottage, one very fluffy magical sheep, and a long-forgotten knitting guild.
+            Tend your flock, spin and dye yarn, knit for the villagers, and restore Yarnvale’s cozy charm.
+          </p>
+          <button class="btn btn-wide" id="btn-begin">
+            Begin your story
+          </button>
+          <p class="tagline">Best enjoyed with a cup of tea and a warm blanket.</p>
+        </div>
+      </section>
+
+      <!-- COTTAGE SCREEN -->
+      <section class="screen" id="screen-cottage">
+        <h2 class="screen-title">Cottage</h2>
+        <p class="screen-subtitle">
+          Your cozy starting point. From here, you can plan your next day in Yarnvale.
+        </p>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Morning Light</div>
+              <div class="card-sub">Soft sun spills across your knitting corner.</div>
+            </div>
+            <span class="chip">Home</span>
+          </div>
+          <div class="card-body">
+            A steaming mug rests beside your favourite needles. Outside, you hear your sheep rustling in the paddock
+            and distant chatter from the village square.
+            <div class="card-row" style="margin-top:6px;">
+              <button class="btn btn-sm" data-nav="screen-paddock">Visit the paddock</button>
+              <button class="btn btn-sm" data-nav="screen-workshop">Go to workshop</button>
+              <button class="btn btn-sm" data-nav="screen-village">Walk to village</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Today’s Focus</div>
+          </div>
+          <div class="card-body stack">
+            <div class="stack-row">
+              <span class="pill">🧶 Knit something cozy</span>
+              <span class="pill">🦙 Care for your sheep</span>
+              <span class="pill">✨ Help a villager</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PADDOCK SCREEN -->
+      <section class="screen" id="screen-paddock">
+        <h2 class="screen-title">Sheep Paddock</h2>
+        <p class="screen-subtitle">
+          A gentle breeze ripples through the grass. Your magical sheep graze contentedly.
+        </p>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Your Flock</div>
+              <div class="card-sub">Brush, feed, and collect wool when it’s ready.</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div id="sheep-container" class="sheep-strip">
+              <!-- Sheep cards injected by JS -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- WORKSHOP SCREEN -->
+      <section class="screen" id="screen-workshop">
+        <h2 class="screen-title">Workshop</h2>
+        <p class="screen-subtitle">
+          The heart of your craft. Spin wool into yarn, dye colours, and knit treasured pieces.
+        </p>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Spinning Wheel</div>
+              <div class="card-sub">Turn wool into soft, workable yarn.</div>
+            </div>
+            <span class="chip">🌀</span>
+          </div>
+          <div class="card-body">
+            <div class="key-value">
+              <span class="kv-label">Plain wool available</span>
+              <span class="kv-value" id="kv-wool-plain">0</span>
+            </div>
+            <div class="key-value">
+              <span class="kv-label">Spinning in progress</span>
+              <span class="kv-value" id="kv-spinning-status">None</span>
+            </div>
+            <div class="card-row">
+              <button class="btn btn-sm" id="btn-spin-wool">Spin 3 wool → 1 yarn</button>
+            </div>
+            <div class="progress-container">
+              <div class="progress-bar">
+                <div class="progress-fill" id="spin-progress"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Knitting Corner</div>
+              <div class="card-sub">Choose a simple pattern to knit.</div>
+            </div>
+            <span class="chip">🧵</span>
+          </div>
+          <div class="card-body">
+            <div class="key-value">
+              <span class="kv-label">Yarn available</span>
+              <span class="kv-value" id="kv-yarn-plain">0</span>
+            </div>
+            <label for="select-pattern" style="font-size:12px;display:block;margin-top:6px;margin-bottom:4px;">
+              Pattern
+            </label>
+            <select id="select-pattern" style="width:100%;padding:4px 6px;border-radius:999px;border:none;font-size:12px;background:#050810;color:var(--text);">
+              <!-- patterns injected -->
+            </select>
+            <div class="key-value">
+              <span class="kv-label">Knitting in progress</span>
+              <span class="kv-value" id="kv-knitting-status">None</span>
+            </div>
+            <div class="card-row">
+              <button class="btn btn-sm" id="btn-knit">Start knitting</button>
+            </div>
+            <div class="progress-container">
+              <div class="progress-bar">
+                <div class="progress-fill" id="knit-progress"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VILLAGE SCREEN -->
+      <section class="screen" id="screen-village">
+        <h2 class="screen-title">Village</h2>
+        <p class="screen-subtitle">
+          Cobblestone paths, lanterns, and neighbours in need of something warm.
+        </p>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Villagers</div>
+              <div class="card-sub">Talk to the locals and help with their knitting requests.</div>
+            </div>
+          </div>
+          <div class="card-body stack" id="npc-container">
+            <!-- NPC cards injected -->
+          </div>
+        </div>
+      </section>
+
+      <!-- SHOP SCREEN -->
+      <section class="screen" id="screen-shop">
+        <h2 class="screen-title">Market & Upgrades</h2>
+        <p class="screen-subtitle">
+          Sell your work, buy upgrades, and grow Yarnvale’s quiet little economy.
+        </p>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Sell Knitted Items</div>
+              <div class="card-sub">Trade handmade pieces for a little gold.</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div id="sell-items-container" class="stack">
+              <!-- Items to sell injected -->
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Upgrades</div>
+              <div class="card-sub">Invest in your flock and workshop.</div>
+            </div>
+          </div>
+          <div class="card-body stack" id="upgrade-container">
+            <!-- Upgrades injected -->
+          </div>
+        </div>
+      </section>
+
+      <!-- INVENTORY SCREEN -->
+      <section class="screen" id="screen-inventory">
+        <h2 class="screen-title">Inventory</h2>
+        <p class="screen-subtitle">
+          A tidy basket of wool, yarn, and finished pieces.
+        </p>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Materials</div>
+          </div>
+          <div class="card-body">
+            <div class="key-value">
+              <span class="kv-label">Plain wool</span>
+              <span class="kv-value" id="inv-wool-plain">0</span>
+            </div>
+            <div class="key-value">
+              <span class="kv-label">Spun yarn</span>
+              <span class="kv-value" id="inv-yarn-plain">0</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Knitted Items</div>
+          </div>
+          <div class="card-body" id="inv-items-container">
+            <!-- list injected -->
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <nav>
+      <div class="nav-row">
+        <button class="nav-btn active" data-nav="screen-cottage">
+          <span class="icon">🏡</span>
+          <span>Cottage</span>
+        </button>
+        <button class="nav-btn" data-nav="screen-paddock">
+          <span class="icon">🦙</span>
+          <span>Paddock</span>
+        </button>
+        <button class="nav-btn" data-nav="screen-workshop">
+          <span class="icon">🧶</span>
+          <span>Workshop</span>
+        </button>
+        <button class="nav-btn" data-nav="screen-village">
+          <span class="icon">🏘️</span>
+          <span>Village</span>
+        </button>
+        <button class="nav-btn" data-nav="screen-shop">
+          <span class="icon">🛒</span>
+          <span>Market</span>
+        </button>
+        <button class="nav-btn" data-nav="screen-inventory">
+          <span class="icon">🎒</span>
+          <span>Inventory</span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- MODAL -->
+    <div id="modal-overlay">
+      <div class="modal">
+        <div class="modal-title" id="modal-title">Title</div>
+        <div class="modal-body" id="modal-body">Body</div>
+        <div class="modal-actions" id="modal-actions">
+          <!-- Buttons injected -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =========================
+    // CONSTANTS & CONFIG
+    // =========================
+
+    const PATTERNS = [
+      {
+        id: 'scarf',
+        name: 'Simple Scarf',
+        yarnCost: 2,
+        timeMs: 8000,
+        value: 10
+      },
+      {
+        id: 'hat',
+        name: 'Cozy Hat',
+        yarnCost: 3,
+        timeMs: 11000,
+        value: 16
+      },
+      {
+        id: 'blanket',
+        name: 'Lap Blanket',
+        yarnCost: 5,
+        timeMs: 15000,
+        value: 28
+      }
+    ];
+
+    const UPGRADES = [
+      {
+        id: 'extra-sheep',
+        name: 'Adopt a new sheep',
+        description: 'Adds a new magical sheep to your paddock.',
+        cost: 40,
+        maxPurchases: 3
+      },
+      {
+        id: 'faster-spinning',
+        name: 'Oil the spinning wheel',
+        description: 'Spinning is 30% faster.',
+        cost: 30,
+        maxPurchases: 1
+      },
+      {
+        id: 'faster-knitting',
+        name: 'Lightweight needles',
+        description: 'Knitting is 30% faster.',
+        cost: 35,
+        maxPurchases: 1
+      }
+    ];
+
+    const NPCS = [
+      {
+        id: 'mira',
+        name: 'Mira the Tailor',
+        description: 'Keeps the village clothed and classy.',
+        friendship: 0,
+        quest: {
+          id: 'mira-scarf',
+          description: 'Knit a Simple Scarf to help Mira stock her shop.',
+          requirement: { itemId: 'scarf', amount: 1 },
+          rewardGold: 18,
+          rewardFriendship: 20,
+          completed: false
+        }
+      },
+      {
+        id: 'rowan',
+        name: 'Rowan the Shepherd',
+        description: 'Understands sheep better than anyone.',
+        friendship: 0,
+        quest: {
+          id: 'rowan-hat',
+          description: 'Bring Rowan a Cozy Hat to keep warm on twilight rounds.',
+          requirement: { itemId: 'hat', amount: 1 },
+          rewardGold: 22,
+          rewardFriendship: 20,
+          completed: false
+        }
+      },
+      {
+        id: 'elder',
+        name: 'Elder Luma',
+        description: 'Remembers when the guild hall shone with lantern light.',
+        friendship: 0,
+        quest: {
+          id: 'elder-blanket',
+          description: 'Craft a Lap Blanket for the guild hearth bench.',
+          requirement: { itemId: 'blanket', amount: 1 },
+          rewardGold: 30,
+          rewardFriendship: 30,
+          completed: false
+        }
+      }
+    ];
+
+    // =========================
+    // INITIAL GAME STATE
+    // =========================
+
+    const SAVE_KEY = 'yarnvaleSaveV1';
+
+    const defaultState = () => ({
+      resources: {
+        woolPlain: 0,
+        yarnPlain: 0,
+        gold: 20
+      },
+      sheep: [
+        {
+          id: 1,
+          name: 'Puff',
+          type: 'Cloudfluff',
+          happiness: 70,
+          woolReady: false,
+          nextWoolTime: Date.now() + 15000
+        }
+      ],
+      items: {
+        scarf: 0,
+        hat: 0,
+        blanket: 0
+      },
+      upgrades: {
+        'extra-sheep': 0,
+        'faster-spinning': 0,
+        'faster-knitting': 0
+      },
+      npcs: JSON.parse(JSON.stringify(NPCS)), // deep-ish clone
+      crafting: {
+        spinning: null, // { endTime }
+        knitting: null  // { patternId, endTime }
+      }
+    });
+
+    let gameState = defaultState();
+
+    // =========================
+    // SAVE / LOAD
+    // =========================
+
+    function saveGame() {
+      try {
+        localStorage.setItem(SAVE_KEY, JSON.stringify(gameState));
+      } catch (e) {
+        console.warn('Save failed', e);
+      }
+    }
+
+    function loadGame() {
+      try {
+        const raw = localStorage.getItem(SAVE_KEY);
+        if (!raw) return false;
+        const parsed = JSON.parse(raw);
+        gameState = parsed;
+        return true;
+      } catch (e) {
+        console.warn('Load failed', e);
+        return false;
+      }
+    }
+
+    function resetGame() {
+      gameState = defaultState();
+      saveGame();
+      renderAll();
+      showModal('New Beginning', 'Your story in Yarnvale has been reset. Puff shakes out their wool, ready to start again.', [
+        { label: 'Back to Cottage', variant: 'primary', handler: () => {
+          hideModal();
+          switchScreen('screen-cottage');
+        } }
+      ]);
+    }
+
+    // =========================
+    // UTILITIES
+    // =========================
+
+    function $(selector) {
+      return document.querySelector(selector);
+    }
+
+    function formatTimeRemaining(ms) {
+      if (ms <= 0) return 'ready';
+      const sec = Math.ceil(ms / 1000);
+      return sec + 's';
+    }
+
+    // =========================
+    // MODAL
+    // =========================
+
+    function showModal(title, body, actions) {
+      $('#modal-title').textContent = title;
+      $('#modal-body').textContent = body;
+      const actionsEl = $('#modal-actions');
+      actionsEl.innerHTML = '';
+      (actions || [{
+        label: 'Close',
+        variant: 'secondary',
+        handler: hideModal
+      }]).forEach((a) => {
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-sm ' + (a.variant === 'danger' ? 'btn-danger' : a.variant === 'secondary' ? 'btn-secondary' : '');
+        btn.textContent = a.label;
+        btn.addEventListener('click', a.handler);
+        actionsEl.appendChild(btn);
+      });
+      $('#modal-overlay').classList.add('active');
+    }
+
+    function hideModal() {
+      $('#modal-overlay').classList.remove('active');
+    }
+
+    // =========================
+    // NAVIGATION
+    // =========================
+
+    function switchScreen(screenId) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      const screen = $('#' + screenId);
+      if (screen) screen.classList.add('active');
+
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        const target = btn.getAttribute('data-nav');
+        btn.classList.toggle('active', target === screenId);
+      });
+    }
+
+    // =========================
+    // RENDER FUNCTIONS
+    // =========================
+
+    function renderResources() {
+      $('#res-wool').textContent = gameState.resources.woolPlain;
+      $('#res-yarn').textContent = gameState.resources.yarnPlain;
+      $('#res-gold').textContent = gameState.resources.gold;
+
+      $('#kv-wool-plain').textContent = gameState.resources.woolPlain;
+      $('#kv-yarn-plain').textContent = gameState.resources.yarnPlain;
+      $('#inv-wool-plain').textContent = gameState.resources.woolPlain;
+      $('#inv-yarn-plain').textContent = gameState.resources.yarnPlain;
+    }
+
+    function renderSheep() {
+      const container = $('#sheep-container');
+      container.innerHTML = '';
+      const now = Date.now();
+
+      gameState.sheep.forEach((sheep) => {
+        const card = document.createElement('div');
+        card.className = 'sheep-card';
+
+        const name = document.createElement('div');
+        name.className = 'sheep-name';
+        name.textContent = sheep.name + ' (' + sheep.type + ')';
+        card.appendChild(name);
+
+        const meta = document.createElement('div');
+        meta.className = 'sheep-meta';
+        const readyText = sheep.woolReady ? 'Wool ready!' : 'Next wool in ' + formatTimeRemaining(sheep.nextWoolTime - now);
+        meta.textContent = 'Happiness: ' + sheep.happiness + ' • ' + readyText;
+        card.appendChild(meta);
+
+        const row = document.createElement('div');
+        row.className = 'card-row';
+
+        const feedBtn = document.createElement('button');
+        feedBtn.className = 'btn btn-sm btn-secondary';
+        feedBtn.textContent = 'Feed';
+        feedBtn.addEventListener('click', () => {
+          if (sheep.happiness < 100) sheep.happiness = Math.min(100, sheep.happiness + 8);
+          // slight chance to speed up wool
+          sheep.nextWoolTime = Math.min(sheep.nextWoolTime, Date.now() + 10000);
+          renderSheep();
+          saveGame();
+        });
+        row.appendChild(feedBtn);
+
+        const brushBtn = document.createElement('button');
+        brushBtn.className = 'btn btn-sm btn-secondary';
+        brushBtn.textContent = 'Brush';
+        brushBtn.addEventListener('click', () => {
+          sheep.happiness = Math.min(100, sheep.happiness + 4);
+          renderSheep();
+          saveGame();
+        });
+        row.appendChild(brushBtn);
+
+        const collectBtn = document.createElement('button');
+        collectBtn.className = 'btn btn-sm';
+        collectBtn.textContent = sheep.woolReady ? 'Collect wool' : 'Not ready';
+        collectBtn.disabled = !sheep.woolReady;
+        collectBtn.addEventListener('click', () => {
+          if (!sheep.woolReady) return;
+          gameState.resources.woolPlain += 2; // base yield
+          sheep.woolReady = false;
+          sheep.nextWoolTime = Date.now() + 20000;
+          renderResources();
+          renderSheep();
+          saveGame();
+        });
+        row.appendChild(collectBtn);
+
+        card.appendChild(row);
+        container.appendChild(card);
+      });
+    }
+
+    function renderWorkshop() {
+      // Spin / Knit status
+      const spinStatus = gameState.crafting.spinning
+        ? 'Spinning...'
+        : 'Idle';
+      $('#kv-spinning-status').textContent = spinStatus;
+
+      const knitStatus = gameState.crafting.knitting
+        ? 'Knitting: ' + (PATTERNS.find(p => p.id === gameState.crafting.knitting.patternId)?.name || '')
+        : 'Idle';
+      $('#kv-knitting-status').textContent = knitStatus;
+
+      // pattern select
+      const select = $('#select-pattern');
+      if (!select.dataset.initialised) {
+        PATTERNS.forEach(p => {
+          const opt = document.createElement('option');
+          opt.value = p.id;
+          opt.textContent = `${p.name} (cost: ${p.yarnCost} yarn, value: ${p.value} gold)`;
+          select.appendChild(opt);
+        });
+        select.dataset.initialised = 'true';
+      }
+    }
+
+    function renderNPCs() {
+      const container = $('#npc-container');
+      container.innerHTML = '';
+      gameState.npcs.forEach(npc => {
+        const card = document.createElement('div');
+        card.className = 'card';
+
+        const header = document.createElement('div');
+        header.className = 'card-header';
+        const left = document.createElement('div');
+        const title = document.createElement('div');
+        title.className = 'card-title';
+        title.textContent = npc.name;
+        const sub = document.createElement('div');
+        sub.className = 'card-sub';
+        sub.textContent = npc.description;
+        left.appendChild(title);
+        left.appendChild(sub);
+
+        const tag = document.createElement('span');
+        tag.className = 'chip';
+        tag.textContent = 'Friendship ' + npc.friendship;
+
+        header.appendChild(left);
+        header.appendChild(tag);
+
+        const body = document.createElement('div');
+        body.className = 'card-body';
+        const qText = npc.quest.completed
+          ? 'You’ve already helped with this request.'
+          : npc.quest.description;
+        body.textContent = qText;
+
+        const row = document.createElement('div');
+        row.className = 'card-row';
+
+        const talkBtn = document.createElement('button');
+        talkBtn.className = 'btn btn-sm btn-secondary';
+        talkBtn.textContent = 'Chat';
+        talkBtn.addEventListener('click', () => {
+          showModal(npc.name, `“Thank you for keeping Yarnvale warm,” ${npc.name.split(' ')[0]} says with a smile.`, [
+            { label: 'Close', variant: 'secondary', handler: hideModal }
+          ]);
+        });
+        row.appendChild(talkBtn);
+
+        const turnInBtn = document.createElement('button');
+        turnInBtn.className = 'btn btn-sm';
+        turnInBtn.textContent = npc.quest.completed ? 'Completed' : 'Deliver item';
+        turnInBtn.disabled = npc.quest.completed;
+        turnInBtn.addEventListener('click', () => {
+          attemptQuestTurnIn(npc.id);
+        });
+        row.appendChild(turnInBtn);
+
+        body.appendChild(row);
+
+        card.appendChild(header);
+        card.appendChild(body);
+        container.appendChild(card);
+      });
+    }
+
+    function renderShop() {
+      // sell items
+      const sellContainer = $('#sell-items-container');
+      sellContainer.innerHTML = '';
+
+      PATTERNS.forEach(p => {
+        const amount = gameState.items[p.id] || 0;
+        const rowCard = document.createElement('div');
+        rowCard.className = 'card';
+
+        const header = document.createElement('div');
+        header.className = 'card-header';
+        const left = document.createElement('div');
+        const title = document.createElement('div');
+        title.className = 'card-title';
+        title.textContent = p.name;
+        const sub = document.createElement('div');
+        sub.className = 'card-sub';
+        sub.textContent = `Value: ${p.value} gold • You have ${amount}`;
+        left.appendChild(title);
+        left.appendChild(sub);
+        header.appendChild(left);
+        rowCard.appendChild(header);
+
+        const body = document.createElement('div');
+        body.className = 'card-body';
+
+        const row = document.createElement('div');
+        row.className = 'card-row';
+
+        const sellOne = document.createElement('button');
+        sellOne.className = 'btn btn-sm';
+        sellOne.textContent = 'Sell 1';
+        sellOne.disabled = amount < 1;
+        sellOne.addEventListener('click', () => {
+          if (gameState.items[p.id] > 0) {
+            gameState.items[p.id] -= 1;
+            gameState.resources.gold += p.value;
+            saveGame();
+            renderResources();
+            renderShop();
+            renderInventory();
+          }
+        });
+        row.appendChild(sellOne);
+
+        const sellAll = document.createElement('button');
+        sellAll.className = 'btn btn-sm btn-secondary';
+        sellAll.textContent = 'Sell all';
+        sellAll.disabled = amount < 1;
+        sellAll.addEventListener('click', () => {
+          if (gameState.items[p.id] > 0) {
+            gameState.resources.gold += p.value * gameState.items[p.id];
+            gameState.items[p.id] = 0;
+            saveGame();
+            renderResources();
+            renderShop();
+            renderInventory();
+          }
+        });
+        row.appendChild(sellAll);
+
+        body.appendChild(row);
+        rowCard.appendChild(body);
+        sellContainer.appendChild(rowCard);
+      });
+
+      // upgrades
+      const upgradeContainer = $('#upgrade-container');
+      upgradeContainer.innerHTML = '';
+      UPGRADES.forEach(up => {
+        const purchased = gameState.upgrades[up.id] || 0;
+        const maxed = purchased >= up.maxPurchases;
+        const card = document.createElement('div');
+        card.className = 'card';
+
+        const header = document.createElement('div');
+        header.className = 'card-header';
+        const left = document.createElement('div');
+        const title = document.createElement('div');
+        title.className = 'card-title';
+        title.textContent = up.name;
+        const sub = document.createElement('div');
+        sub.className = 'card-sub';
+        sub.textContent = up.description;
+        left.appendChild(title);
+        left.appendChild(sub);
+        const tag = document.createElement('span');
+        tag.className = 'chip';
+        tag.textContent = maxed ? 'Maxed' : `Cost ${up.cost} gold`;
+        header.appendChild(left);
+        header.appendChild(tag);
+        card.appendChild(header);
+
+        const body = document.createElement('div');
+        body.className = 'card-body';
+
+        const row = document.createElement('div');
+        row.className = 'card-row';
+
+        const buyBtn = document.createElement('button');
+        buyBtn.className = 'btn btn-sm';
+        buyBtn.textContent = maxed ? 'Purchased' : 'Buy';
+        buyBtn.disabled = maxed || gameState.resources.gold < up.cost;
+        buyBtn.addEventListener('click', () => {
+          if (gameState.resources.gold >= up.cost && !maxed) {
+            gameState.resources.gold -= up.cost;
+            gameState.upgrades[up.id] = (gameState.upgrades[up.id] || 0) + 1;
+            // if extra sheep, add a new sheep
+            if (up.id === 'extra-sheep') {
+              const newId = gameState.sheep.length + 1;
+              gameState.sheep.push({
+                id: newId,
+                name: 'Fluff ' + newId,
+                type: 'Moonlit',
+                happiness: 65,
+                woolReady: false,
+                nextWoolTime: Date.now() + 18000
+              });
+            }
+            saveGame();
+            renderResources();
+            renderSheep();
+            renderShop();
+          }
+        });
+        row.appendChild(buyBtn);
+
+        body.appendChild(row);
+        card.appendChild(body);
+        upgradeContainer.appendChild(card);
+      });
+    }
+
+    function renderInventory() {
+      const container = $('#inv-items-container');
+      container.innerHTML = '';
+      let hasAny = false;
+      PATTERNS.forEach(p => {
+        const amount = gameState.items[p.id] || 0;
+        if (amount > 0) {
+          hasAny = true;
+          const kv = document.createElement('div');
+          kv.className = 'key-value';
+          const label = document.createElement('span');
+          label.className = 'kv-label';
+          label.textContent = p.name;
+          const value = document.createElement('span');
+          value.className = 'kv-value';
+          value.textContent = amount;
+          kv.appendChild(label);
+          kv.appendChild(value);
+          container.appendChild(kv);
+        }
+      });
+      if (!hasAny) {
+        container.textContent = 'Your basket is empty for now. Knit something lovely to fill it.';
+      }
+    }
+
+    function renderCraftingProgress() {
+      // spinning
+      const spinFill = $('#spin-progress');
+      if (gameState.crafting.spinning) {
+        const { endTime, startTime } = gameState.crafting.spinning;
+        const span = endTime - startTime;
+        const left = endTime - Date.now();
+        const done = Math.min(1, Math.max(0, 1 - left / span));
+        spinFill.style.width = (done * 100) + '%';
+      } else {
+        spinFill.style.width = '0%';
+      }
+
+      // knitting
+      const knitFill = $('#knit-progress');
+      if (gameState.crafting.knitting) {
+        const { endTime, startTime } = gameState.crafting.knitting;
+        const span = endTime - startTime;
+        const left = endTime - Date.now();
+        const done = Math.min(1, Math.max(0, 1 - left / span));
+        knitFill.style.width = (done * 100) + '%';
+      } else {
+        knitFill.style.width = '0%';
+      }
+    }
+
+    function renderAll() {
+      renderResources();
+      renderSheep();
+      renderWorkshop();
+      renderNPCs();
+      renderShop();
+      renderInventory();
+      renderCraftingProgress();
+    }
+
+    // =========================
+    // GAME LOGIC
+    // =========================
+
+    function updateSheep() {
+      const now = Date.now();
+      gameState.sheep.forEach(s => {
+        if (!s.woolReady && now >= s.nextWoolTime) {
+          s.woolReady = true;
+        }
+      });
+    }
+
+    function updateCrafting() {
+      const now = Date.now();
+
+      // spinning
+      if (gameState.crafting.spinning) {
+        if (now >= gameState.crafting.spinning.endTime) {
+          gameState.crafting.spinning = null;
+          gameState.resources.yarnPlain += 1;
+          renderResources();
+          renderWorkshop();
+          saveGame();
+        }
+      }
+
+      // knitting
+      if (gameState.crafting.knitting) {
+        if (now >= gameState.crafting.knitting.endTime) {
+          const patternId = gameState.crafting.knitting.patternId;
+          gameState.crafting.knitting = null;
+          gameState.items[patternId] = (gameState.items[patternId] || 0) + 1;
+          renderInventory();
+          renderWorkshop();
+          renderShop();
+          saveGame();
+          const patternName = PATTERNS.find(p => p.id === patternId)?.name || 'your knitting';
+          showModal('Finished!', `You set down your needles and admire your ${patternName.toLowerCase()}.`, [
+            { label: 'Lovely', variant: 'primary', handler: hideModal }
+          ]);
+        }
+      }
+    }
+
+    function attemptQuestTurnIn(npcId) {
+      const npc = gameState.npcs.find(n => n.id === npcId);
+      if (!npc || npc.quest.completed) return;
+      const req = npc.quest.requirement;
+      const have = gameState.items[req.itemId] || 0;
+      const patternName = PATTERNS.find(p => p.id === req.itemId)?.name || 'item';
+
+      if (have < req.amount) {
+        showModal(
+          'Not quite yet',
+          `You don’t have the right piece yet. ${npc.name.split(' ')[0]} is hoping for ${req.amount} × ${patternName}.`,
+          [{ label: 'Keep knitting', variant: 'secondary', handler: hideModal }]
+        );
+        return;
+      }
+
+      // complete
+      gameState.items[req.itemId] -= req.amount;
+      gameState.resources.gold += npc.quest.rewardGold;
+      npc.friendship += npc.quest.rewardFriendship;
+      npc.quest.completed = true;
+
+      saveGame();
+      renderResources();
+      renderNPCs();
+      renderShop();
+      renderInventory();
+
+      showModal(
+        'Thank you!',
+        `${npc.name.split(' ')[0]} beams with gratitude as they take the ${patternName.toLowerCase()}.\n\n` +
+        `You gain ${npc.quest.rewardGold} gold and your friendship grows.`,
+        [{ label: 'Warm fuzzies', variant: 'primary', handler: hideModal }]
+      );
+    }
+
+    function startSpinning() {
+      if (gameState.crafting.spinning) return;
+      if (gameState.resources.woolPlain < 3) {
+        showModal('Not enough wool', 'You need at least 3 plain wool to spin a ball of yarn.', [
+          { label: 'Got it', variant: 'secondary', handler: hideModal }
+        ]);
+        return;
+      }
+      gameState.resources.woolPlain -= 3;
+      const baseTime = 9000;
+      const faster = gameState.upgrades['faster-spinning'] > 0 ? 0.7 : 1.0;
+      const duration = baseTime * faster;
+      gameState.crafting.spinning = {
+        startTime: Date.now(),
+        endTime: Date.now() + duration
+      };
+      renderResources();
+      renderWorkshop();
+      saveGame();
+    }
+
+    function startKnitting() {
+      if (gameState.crafting.knitting) return;
+      const select = $('#select-pattern');
+      const patternId = select.value;
+      const pattern = PATTERNS.find(p => p.id === patternId);
+      if (!pattern) return;
+      if (gameState.resources.yarnPlain < pattern.yarnCost) {
+        showModal('Not enough yarn', `You need ${pattern.yarnCost} yarn for that pattern.`, [
+          { label: 'Understood', variant: 'secondary', handler: hideModal }
+        ]);
+        return;
+      }
+      gameState.resources.yarnPlain -= pattern.yarnCost;
+      const faster = gameState.upgrades['faster-knitting'] > 0 ? 0.7 : 1.0;
+      const duration = pattern.timeMs * faster;
+      gameState.crafting.knitting = {
+        patternId,
+        startTime: Date.now(),
+        endTime: Date.now() + duration
+      };
+      renderResources();
+      renderWorkshop();
+      saveGame();
+    }
+
+    // =========================
+    // EVENT BINDINGS
+    // =========================
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // Attempt to load
+      const hadSave = loadGame();
+      if (hadSave) {
+        // Skip intro
+        switchScreen('screen-cottage');
+        $('#screen-intro').classList.remove('active');
+      } else {
+        // Show intro, disable nav for now
+        switchScreen('screen-intro');
+      }
+
+      // Nav buttons
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const target = btn.getAttribute('data-nav');
+          switchScreen(target);
+        });
+      });
+
+      // Intro "Begin" button
+      $('#btn-begin').addEventListener('click', () => {
+        switchScreen('screen-cottage');
+        $('#screen-intro').classList.remove('active');
+        saveGame();
+      });
+
+      // Settings
+      $('#btn-settings').addEventListener('click', () => {
+        showModal('Settings', 'You can save your progress or start fresh.', [
+          {
+            label: 'Save now',
+            variant: 'primary',
+            handler: () => {
+              saveGame();
+              hideModal();
+            }
+          },
+          {
+            label: 'Reset game',
+            variant: 'danger',
+            handler: () => {
+              hideModal();
+              showModal('Reset Yarnvale?', 'This will clear your progress and start again with Puff the sheep.', [
+                { label: 'Cancel', variant: 'secondary', handler: hideModal },
+                { label: 'Reset', variant: 'danger', handler: () => {
+                  hideModal();
+                  resetGame();
+                }}
+              ]);
+            }
+          },
+          {
+            label: 'Close',
+            variant: 'secondary',
+            handler: hideModal
+          }
+        ]);
+      });
+
+      // Workshop buttons
+      $('#btn-spin-wool').addEventListener('click', () => {
+        startSpinning();
+      });
+      $('#btn-knit').addEventListener('click', () => {
+        startKnitting();
+      });
+
+      // Initial render
+      renderAll();
+
+      // Game loops
+      setInterval(() => {
+        updateSheep();
+        updateCrafting();
+        renderSheep();
+        renderWorkshop();
+        renderCraftingProgress();
+      }, 500);
+
+      // Auto-save every 20s
+      setInterval(saveGame, 20000);
+    });
+  </script>
+</body>
+</html>
