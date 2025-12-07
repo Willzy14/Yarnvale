@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head><title>Generate Yarnvale Icons</title></head>
+<body>
+<h2>Right-click each icon and "Save image as..."</h2>
+<p>Save as <b>icon-192.png</b>:</p>
+<canvas id="icon192" width="192" height="192"></canvas>
+<p>Save as <b>icon-512.png</b>:</p>
+<canvas id="icon512" width="512" height="512"></canvas>
+
+<script>
+function drawIcon(canvas) {
+  const ctx = canvas.getContext('2d');
+  const size = canvas.width;
+  const scale = size / 192;
+  
+  // Background gradient (sky blue to dark)
+  const bg = ctx.createLinearGradient(0, 0, 0, size);
+  bg.addColorStop(0, '#182c4e');
+  bg.addColorStop(1, '#0a1525');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, size, size);
+  
+  // Grass at bottom
+  const grass = ctx.createLinearGradient(0, size * 0.6, 0, size);
+  grass.addColorStop(0, '#2d7548');
+  grass.addColorStop(1, '#1d4b3a');
+  ctx.fillStyle = grass;
+  ctx.fillRect(0, size * 0.65, size, size * 0.35);
+  
+  // Simple yarn ball (white/cream)
+  const cx = size * 0.5;
+  const cy = size * 0.45;
+  const r = size * 0.25;
+  
+  ctx.fillStyle = '#f8f0d8';
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Yarn swirl lines
+  ctx.strokeStyle = '#e8d8c0';
+  ctx.lineWidth = 3 * scale;
+  ctx.beginPath();
+  ctx.arc(cx - r * 0.3, cy - r * 0.2, r * 0.5, 0, Math.PI * 1.5);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(cx + r * 0.2, cy + r * 0.3, r * 0.4, Math.PI * 0.5, Math.PI * 2);
+  ctx.stroke();
+  
+  // Knitting needles
+  ctx.strokeStyle = '#c49a5a';
+  ctx.lineWidth = 4 * scale;
+  ctx.lineCap = 'round';
+  
+  // Needle 1
+  ctx.beginPath();
+  ctx.moveTo(cx - r * 1.2, cy - r * 0.8);
+  ctx.lineTo(cx + r * 0.5, cy + r * 1.2);
+  ctx.stroke();
+  
+  // Needle 2
+  ctx.beginPath();
+  ctx.moveTo(cx + r * 1.2, cy - r * 0.8);
+  ctx.lineTo(cx - r * 0.3, cy + r * 1.2);
+  ctx.stroke();
+  
+  // "Y" text for Yarnvale
+  ctx.fillStyle = '#f5f7ff';
+  ctx.font = `bold ${28 * scale}px system-ui`;
+  ctx.textAlign = 'center';
+  ctx.fillText('YARNVALE', size * 0.5, size * 0.88);
+}
+
+drawIcon(document.getElementById('icon192'));
+drawIcon(document.getElementById('icon512'));
+</script>
+</body>
+</html>
